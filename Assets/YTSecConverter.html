@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 影片秒數轉換器</title>
+    <style>
+        input {
+            width: 160px;
+        }
+
+        button {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <input id="iYTSec" type="number" title="YouTube 影片秒數" placeholder="YouTube 影片秒數" value="0" min="0"
+               max="86399" />
+        &nbsp;
+        <button id="btnConvertTimestamp" type="button" title="轉換時間摽記">轉換時間摽記</button>
+        &nbsp;
+        <button id="btnReset" type="button" title="重置">重置</button>
+    </div>
+    <br>
+    <div>
+        <input id="iYTTime" type="text" title="YouTube 影片時間字串" placeholder="YouTube 影片時間字串" value="00:00:00" />
+        &nbsp;
+        <button id="btnConvertSecs" type="button" title="轉換秒數">轉換秒數</button>
+    </div>
+    <br>
+    <div>
+        <label for="tResult">轉換結果：</label>
+        <br>
+        <textarea id="tResult" title="轉換結果" cols="50" row="5"></textarea>
+        <p>
+            <small>格式：{FFmpeg 時間格式}｜{YouTube 留言}｜{YouTube 秒數}｜{Twitch 時間格式}</small>
+        </p>
+    </div>
+    <script>
+        // 應用程式名稱。
+        const appName = "YouTube 影片秒數轉換器",
+            // 版本號。
+            appVersion = "v0.0.1",
+            // 頁面標題。
+            pageTitle = `${appName} ${appVersion}`;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // 設定頁面的標題。
+            document.title = pageTitle;
+
+            const iYTSec = document.getElementById("iYTSec");
+            const iYTTime = document.getElementById("iYTTime");
+            const btnConvertTimestamp = document.getElementById("btnConvertTimestamp");
+            const btnConvertSecs = document.getElementById("btnConvertSecs");
+            const btnReset = document.getElementById("btnReset");
+            const tResult = document.getElementById("tResult");
+
+            btnConvertTimestamp.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                const secs = parseInt(iYTSec.value);
+
+                if (secs >= 0 && secs <= 86399) {
+                    tResult.textContent = `${convertToTimestamp(secs)}｜` +
+                        `${convertToYTTimestamp(secs, true)}｜` +
+                        `${secs}｜` +
+                        `${convertToTwitchTimestamp(secs)}`;
+                } else {
+                    if (secs > 86399) {
+                        alert("輸入的秒數不能超過 86399 秒。");
+                    } else {
+                        alert("輸入的秒數必須為正整數。");
+                    }
+                }
+            });
+
+            btnConvertSecs.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                const pattern = "(?:2[0-3]|[01]?[0-9]):[0-5][0-9]:[0-5][0-9]";
+
+                const hms = iYTTime.value;
+
+                if (hms.match(pattern)) {
+                    tResult.textContent = convertTimeStringToSeconds(hms);
+                } else {
+                    alert("請輸入正確的時間字串，格式：HH:mm:ss");
+                }
+            });
+
+            btnReset.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                iYTSec.value = 0;
+                iYTTime.value = "00:00:00";
+                tResult.textContent = "";
+            });
+        });
+
+        /**
+         * 將秒數格式化成 FFmpeg 的時間格式字串
+         *
+         * 參考：https://www.geeksforgeeks.org/how-to-convert-seconds-to-time-string-format-hhmmss-using-javascript/
+         *
+         * @param {number} secs 數值，HTML <video> 元素的 currentTime 屬性的值。
+         * @param {boolean} allowDecimalPoint 布林值，是否允許輸出毫秒，預設值為 true。
+         * @returns 字串，FFmpeg 時間格式字串。
+         */
+        function convertToTimestamp(secs, allowDecimalPoint = true) {
+            const dateObj = new Date(secs * 1000);
+
+            const hours = dateObj.getUTCHours();
+            const minutes = dateObj.getUTCMinutes();
+            let seconds = dateObj.getSeconds();
+            const milliseconds = dateObj.getMilliseconds();
+
+            let decimalPoint = "";
+
+            if (allowDecimalPoint === true) {
+                decimalPoint = `.${milliseconds.toString().padStart(3, "0")}`;
+            } else {
+                // 對毫秒進行四捨五入，當值大於等於 500 毫秒加 1 秒。
+                if (milliseconds >= 500) {
+                    seconds = seconds + 1;
+                }
+            }
+
+            return `${hours.toString().padStart(2, "0")}:` +
+                `${minutes.toString().padStart(2, "0")}:` +
+                `${seconds.toString().padStart(2, "0")}` +
+                `${decimalPoint}`;
+        }
+
+        /**
+         * 將秒數格式化成 YouTube 留言的時間格式字串
+         *
+         * @param {number} secs secs 數值，HTML <video> 元素的 currentTime 屬性的值。
+         * @param {boolean} formated 布林值，用於判斷是否輸出格式化（hh:mm:ss）後的字串。
+         * @returns 字串，YouTube 留言的時間格式（mm:ss）字串。
+         */
+        function convertToYTTimestamp(secs, formated = false) {
+            const dateObj = new Date(secs * 1000);
+
+            const hours = dateObj.getUTCHours();
+            const minutes = dateObj.getUTCMinutes();
+            let seconds = dateObj.getSeconds();
+            const milliseconds = dateObj.getMilliseconds();
+
+            // 對毫秒進行四捨五入，當值大於等於 500 毫秒加 1 秒。
+            if (milliseconds >= 500) {
+                seconds = seconds + 1;
+            }
+
+            if (formated === true) {
+                return `${hours.toString().padStart(2, "0")}:` +
+                    `${minutes.toString().padStart(2, "0")}:` +
+                    `${seconds.toString().padStart(2, "0")}`;
+            } else {
+                return `${hours > 0 ? (hours + ":") : ""}` +
+                    `${hours > 0 ? (minutes.toString().padStart(2, "0")) : minutes}:` +
+                    `${seconds.toString().padStart(2, "0")}`;
+            }
+        }
+
+        /**
+         * 將秒數格式化成 Twitch 網址的時間格式字串
+         *
+         * @param {number} secs secs 數值，HTML <video> 元素的 currentTime 屬性的值。
+         * @returns Twitch 網址的時間格式（_h_m_s）字串。
+         */
+        function convertToTwitchTimestamp(secs) {
+            const dateObj = new Date(secs * 1000);
+
+            const hours = dateObj.getUTCHours();
+            const minutes = dateObj.getUTCMinutes();
+            let seconds = dateObj.getSeconds();
+            const milliseconds = dateObj.getMilliseconds();
+
+            // 對毫秒進行四捨五入，當值大於等於 500 毫秒加 1 秒。
+            if (milliseconds >= 500) {
+                seconds = seconds + 1;
+            }
+
+            return `${hours > 0 ? (hours + "h") : ""}` +
+                `${minutes > 0 ? (minutes + "m") : ""}` +
+                `${seconds}s`;
+        }
+
+        /**
+         * 將時間字串轉換成秒數
+         *
+         * 參考：https://thewebdev.info/2021/05/23/how-to-convert-hhmmss-time-string-to-seconds-only-in-javascript/
+         *
+         * @param {string} hms 時間字串，格式：hh:mm:ss。
+         * @returns 秒數。
+         */
+        function convertTimeStringToSeconds(hms) {
+            const [hours, minutes, seconds] = hms.split(":");
+            const totalSeconds = (+hours) * 60 * 60 + (+minutes) * 60 + (+seconds);
+
+            return totalSeconds;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>陽春字幕產生器</title>
+    <style>
+        html,
+        body {
+            margin: 0px;
+        }
+
+        .wrapper {
+            display: -ms-grid;
+            display: grid;
+        }
+
+            .wrapper > div > div > div > label {
+                margin: 4px;
+            }
+
+            .wrapper > div > div > div > textarea {
+                margin: 4px;
+            }
+
+        #btnStart {
+            color: green;
+        }
+
+        #btnReset,
+        #btnStop,
+        #btnRemoveSubtitle {
+            color: red;
+        }
+
+        #btnExport {
+            color: royalblue;
+        }
+
+            #btnReset:disabled,
+            #btnStart:disabled,
+            #btnStop:disabled,
+            #btnExport:disabled,
+            #btnRemoveSubtitle:disabled {
+                color: #c0c0c0;
+            }
+
+        #sNotice {
+            color: red;
+        }
+
+        .innerWrapper1 {
+            display: -ms-inline-grid;
+            display: inline-grid;
+            -ms-grid-columns: 510px 380px 340px;
+            grid-template-columns: 510px 380px 340px;
+        }
+
+            .innerWrapper1 > div {
+                align-content: flex-start;
+                display: -ms-grid;
+                display: grid;
+                margin: 4px;
+            }
+
+                .innerWrapper1 > div > textarea {
+                    max-height: 130px;
+                    max-width: 323px;
+                    min-height: 130px;
+                    min-width: 323px;
+                    overflow-y: scroll;
+                }
+
+        #dVideoFunction {
+            border: 1px #000000 solid;
+            border-radius: 8px;
+            margin: 8px;
+            max-width: 333px;
+            padding: 8px;
+        }
+
+        #dVideoTimestamp {
+            border: 1px #000000 solid;
+            border-radius: 8px;
+            margin: 8px;
+            max-width: 333px;
+            padding: 8px;
+        }
+
+        #sTimestamp,
+        #sSeconds {
+            color: cadetblue;
+        }
+
+        .contentBlock {
+            border: 1px #000000 solid;
+            border-radius: 8px;
+            margin: 4px;
+            max-width: 540px;
+            padding: 8px;
+        }
+
+        .innerWrapper2 {
+            display: -ms-inline-grid;
+            display: inline-grid;
+            -ms-grid-columns: 510px 380px 340px;
+            grid-template-columns: 510px 380px 340px;
+        }
+
+            .innerWrapper2 > div {
+                align-content: flex-start;
+                display: -ms-grid;
+                display: grid;
+                margin: 4px;
+            }
+
+                .innerWrapper2 > div > input {
+                    margin-bottom: 4px;
+                }
+
+                .innerWrapper2 > div > select {
+                    max-width: 330px;
+                    min-height: 231px;
+                }
+
+        #dCurrentSubtitle {
+            border: 1px palevioletred solid;
+            border-radius: 8px;
+            margin: 4px;
+            max-width: 500px;
+            padding: 8px;
+        }
+
+        #tSubtitleText {
+            min-height: 100px;
+            min-width: 460px;
+            max-width: 460px;
+            max-height: 100px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+        }
+
+        .innerWrapper3 {
+            display: -ms-inline-grid;
+            display: inline-grid;
+            -ms-grid-columns: 510px;
+            grid-template-columns: 510px;
+        }
+
+            .innerWrapper3 > div {
+                align-content: flex-start;
+                display: -ms-grid;
+                display: grid;
+                margin: 4px;
+            }
+
+                .innerWrapper3 > div > textarea {
+                    display: none;
+                    max-height: 150px;
+                    max-width: 490px;
+                    min-height: 150px;
+                    min-width: 490px;
+                    overflow-y: scroll;
+                }
+
+        #lSubtitleContent {
+            color: darkkhaki;
+            border: 1px darkkhaki solid;
+            border-radius: 8px;
+            padding: 4px;
+            text-align: center;
+            width: 120px;
+        }
+
+            #lSubtitleContent:hover {
+                color: #c0c0c0;
+                border: 1px #c0c0c0 solid;
+            }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div>
+            <div class="innerWrapper1">
+                <div>
+                    <label for="dSubtitleFunction">字幕功能</label>
+                    <div id="dSubtitleFunction" class="contentBlock">
+                        <button type="button" id="btnReset">重設 (R)</button>&nbsp;
+                        <button type="button" id="btnStart">開始 (W)</button>&nbsp;
+                        <button type="button" id="btnStop">停止 (E)</button>
+                        <hr />
+                        <button type="button" id="btnRecordStartTime">記錄開始時間 (S)</button>&nbsp;
+                        <button type="button" id="btnRecordEndTime">記錄結束時間 (D)</button>&nbsp;
+                        <button type="button" id="btnNextSubtitle">下一個字幕 (F)</button>&nbsp;
+                        <button type="button" id="btnPreviousSubtitle">上一個字幕 (A)</button>
+                        <hr />
+                        <select id="sFileFormat" title="字幕檔案格式">
+                            <option value=".srt">SubRip Text</option>
+                            <option value=".vtt">WebVTT</option>
+                        </select>&nbsp;
+                        <button type="button" id="btnExport">匯出字幕檔 (Q)</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="dVideoFunction">影片功能</label>
+                    <div id="dVideoFunction">
+                        <button type="button" id="btnPlayVideo">播放 (Z)</button>&nbsp;
+                        <button type="button" id="btnRewindVideo" title="倒轉 2 秒">倒轉 (X)</button>&nbsp;
+                        <button type="button" id="btnFastForwardVideo" title="快轉 2 秒">快轉 (C)</button>&nbsp;
+                        <button type="button" id="btnStopVideo">停止 (V)</button>&nbsp;
+                    </div>
+                    <div id="dVideoTimestamp">
+                        時間標記：
+                        <span id="sTimestamp">00:00:00.000</span>
+                        <br />
+                        秒數：
+                        <span id="sSeconds">0</span>
+                    </div>
+                </div>
+                <div>
+                    <label for="tTextContent">
+                        文本&nbsp;<span id="sNotice">(※ 1 行為 1 個字幕)</span>&nbsp;
+                        <input type="checkbox" id="cbEnableParseMultipleLanguage" title="勾選以啟用多語系解析 (※ 2/3 行為 1 個字幕)" />
+                        <label for="cbEnableParseMultipleLanguage" title="勾選以啟用多語系解析 (※ 2/3 行為 1 個字幕)">
+                            <select id="sLanguageParseNumber" title="語系數量">
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                            語系解析
+                        </label>
+                    </label>
+                    <textarea id="tTextContent" title="※ 1 行為 1 個字幕" placeholder="請輸入文本……"></textarea>
+                </div>
+            </div>
+            <div class="innerWrapper2">
+                <div>
+                    <label for="dCurrentSubtitle">
+                        目前字幕&nbsp;
+                        <a rel="noopener noreferrer" target="_blank" href="https://en.wikipedia.org/wiki/SubRip"
+                           title="SubRip - Wikipedia">
+                            SubRip - Wikipedia
+                        </a>
+                        &nbsp;
+                        <a rel="noopener noreferrer" target="_blank"
+                           href="https://developer.mozilla.org/zh-TW/docs/Web/API/WebVTT_API"
+                           title="WebVTT - Web APIs | MDN">
+                            WebVTT - Web APIs | MDN
+                        </a>
+                    </label>
+                    <div id="dCurrentSubtitle">
+                        節點 ID：
+                        <input type="text" id="iSubtitleNodeId" title="節點 ID" placeholder="請輸入節點 ID……" />
+                        <br />
+                        開始時間：
+                        <input type="text" id="iSubtitleStartTime" title="開始時間" placeholder="請輸入開始時間……" />
+                        <br />
+                        結束時間：
+                        <input type="text" id="iSubtitleEndTime" title="結束時間" placeholder="請輸入結束時間……" />
+                        <br />
+                        字幕文字：
+                        <br />
+                        <textarea id="tSubtitleText" title="字幕文字" placeholder="請輸入字幕文字……"></textarea>
+                    </div>
+                </div>
+                <div>
+                    <input type="file" id="iFileUpload" placeholder="請選擇視訊檔案" accept=".mp4,.mkv" />
+                    <video id="vVideoPlayer" width="360" height="240" controls></video>
+                </div>
+                <div>
+                    <label for="sSubtitleList">
+                        字幕列表&nbsp;
+                        <button type="button" id="btnAddSubtitle">新增字幕</button>&nbsp;
+                        <button type="button" id="btnRemoveSubtitle">刪除字幕</button>&nbsp;
+                        <button type="button" id="btnReOrderSubtitleNodeId">重排節點 ID</button>
+                    </label>
+                    <select id="sSubtitleList" title="雙擊項目以載入該字幕" multiple></select>
+                </div>
+            </div>
+            <div class="innerWrapper3">
+                <div>
+                    <label id="lSubtitleContent" for="tSubtitleContent" title="雙擊以顯示 / 隱藏 WebVTT 字幕">
+                        WebVTT 字幕
+                    </label>
+                    <textarea id="tSubtitleContent" title="產生的 WebVTT 字幕" placeholder="WebVTT 字幕"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        "use strict";
+
+        // 字幕類別。
+        class Subtitle {
+            constructor(nodeId, startTime, endTime, text) {
+                this.nodeId = nodeId;
+                this.startTime = startTime;
+                this.endTime = endTime;
+                this.text = text;
+            }
+        }
+
+        // 應用程式名稱。
+        const appName = "陽春字幕產生器",
+            // 版本號。
+            appVersion = "v1.5.3",
+            // 頁面標題。
+            pageTitle = `${appName} ${appVersion}`,
+            // 預設 2 秒。
+            rewindSeconds = 2,
+            // WebVTT 標頭。
+            prefixWebVTT = "WEBVTT\n\n";
+
+        // 元素宣告。
+        let btnReset, btnStart, btnStop,
+            btnRecordStartTime, btnRecordEndTime, btnNextSubtitle, btnPreviousSubtitle,
+            sFileFormat, btnExport,
+            btnPlayVideo, btnRewindVideo, btnFastForwardVideo, btnStopVideo,
+            sNotice, cbEnableParseMultipleLanguage, sLanguageParseNumber, tTextContent,
+            sTimestamp, sSeconds,
+            iSubtitleNodeId, iSubtitleStartTime, iSubtitleEndTime, tSubtitleText,
+            iFileUpload, vVideoPlayer,
+            sSubtitleList, btnAddSubtitle, btnRemoveSubtitle, btnReOrderSubtitleNodeId,
+            lSubtitleContent, tSubtitleContent;
+
+        // 動態變數。
+        let playPromise = undefined,
+            isPlaying = false,
+            buttonGroup = [],
+            arrayOfSubtitles = [],
+            indexOfSubtitles = -1,
+            currentSubtitleItem = null;
+
+        // 排除常用的快捷鍵。
+        const keyGroup =
+            [
+                "KeyR", "KeyW", "KeyS", "KeyD",
+                "KeyF", /*"KeyA",*/ "KeyQ", "KeyE",
+                "KeyZ", /*"KeyX",*/ /*"KeyC",*/ /*"KeyV"*/
+            ];
+
+        // 註冊 DOMContentLoaded 事件。
+        document.addEventListener("DOMContentLoaded", (event) => {
+            try {
+                // 設定頁面的標題。
+                document.title = pageTitle;
+
+                // 設定變數。
+                btnReset = document.getElementById("btnReset");
+                btnStart = document.getElementById("btnStart");
+                btnStop = document.getElementById("btnStop");
+                btnRecordStartTime = document.getElementById("btnRecordStartTime");
+                btnRecordEndTime = document.getElementById("btnRecordEndTime");
+                btnNextSubtitle = document.getElementById("btnNextSubtitle");
+                btnPreviousSubtitle = document.getElementById("btnPreviousSubtitle");
+                sFileFormat = document.getElementById("sFileFormat");
+                btnExport = document.getElementById("btnExport");
+                btnPlayVideo = document.getElementById("btnPlayVideo");
+                btnRewindVideo = document.getElementById("btnRewindVideo");
+                btnFastForwardVideo = document.getElementById("btnFastForwardVideo");
+                btnStopVideo = document.getElementById("btnStopVideo");
+                sTimestamp = document.getElementById("sTimestamp");
+                sSeconds = document.getElementById("sSeconds");
+                sNotice = document.getElementById("sNotice");
+                cbEnableParseMultipleLanguage = document.getElementById("cbEnableParseMultipleLanguage");
+                sLanguageParseNumber = document.getElementById("sLanguageParseNumber");
+                tTextContent = document.getElementById("tTextContent");
+                iSubtitleNodeId = document.getElementById("iSubtitleNodeId");
+                iSubtitleStartTime = document.getElementById("iSubtitleStartTime");
+                iSubtitleEndTime = document.getElementById("iSubtitleEndTime");
+                tSubtitleText = document.getElementById("tSubtitleText");
+                iFileUpload = document.getElementById("iFileUpload");
+                vVideoPlayer = document.getElementById("vVideoPlayer");
+                sSubtitleList = document.getElementById("sSubtitleList");
+                btnAddSubtitle = document.getElementById("btnAddSubtitle");
+                btnRemoveSubtitle = document.getElementById("btnRemoveSubtitle");
+                btnReOrderSubtitleNodeId = document.getElementById("btnReOrderSubtitleNodeId");
+                lSubtitleContent = document.getElementById("lSubtitleContent");
+                tSubtitleContent = document.getElementById("tSubtitleContent");
+
+                // 設定 buttonGroup。
+                buttonGroup = [
+                    btnReset, btnStart, btnStop,
+                    btnNextSubtitle, btnRecordStartTime, btnRecordEndTime, btnPreviousSubtitle,
+                    btnPlayVideo, btnRewindVideo, btnFastForwardVideo, btnStopVideo,
+                    btnExport,
+                    btnAddSubtitle, btnRemoveSubtitle, btnReOrderSubtitleNodeId
+                ];
+
+                // 禁用字幕功能。
+                disableSubtitleFunction(true, true);
+
+                // 禁用影片功能。
+                disableVideoFunction(true);
+
+                // 註冊監聽器。
+                registerListeners();
+            } catch (error) {
+                alert(error);
+            }
+        });
+
+        /**
+         * 註冊監聽器
+         */
+        function registerListeners() {
+            try {
+                if (isElementExists(cbEnableParseMultipleLanguage, "cbEnableParseMultipleLanguage") === true) {
+                    // 註冊 onchange 事件。
+                    cbEnableParseMultipleLanguage.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        const checked = cbEnableParseMultipleLanguage.checked;
+
+                        // 預設為 2。
+                        let languageParseNumber = 2;
+
+                        if (isElementExists(sLanguageParseNumber, sLanguageParseNumber) === true) {
+                            languageParseNumber = sLanguageParseNumber.options[sLanguageParseNumber.selectedIndex].value;
+                        }
+
+                        if (isElementExists(sNotice, "sNotice") === true) {
+                            if (checked === true) {
+                                sNotice.textContent = `(※ ${languageParseNumber} 行為 1 個字幕)`;
+                            } else {
+                                sNotice.textContent = "(※ 1 行為 1 個字幕)";
+                            }
+                        }
+
+                        if (isElementExists(tTextContent, "tTextContent") === true) {
+                            if (checked === true) {
+                                tTextContent.title = `※ ${languageParseNumber} 行為 1 個字幕`;
+                            } else {
+                                tTextContent.title = "※ 1 行為 1 個字幕";
+                            }
+                        }
+                    }
+                }
+
+                if (isElementExists(sLanguageParseNumber, "sLanguageParseNumber") === true) {
+                    // 註冊 onchange 事件。
+                    sLanguageParseNumber.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(cbEnableParseMultipleLanguage, "cbEnableParseMultipleLanguage") === true) {
+                            const changeEvent = new Event("change");
+
+                            cbEnableParseMultipleLanguage.dispatchEvent(changeEvent);
+                        }
+                    }
+                }
+
+                if (isElementExists(tTextContent, "tTextContent") === true) {
+                    // 註冊 onchange 事件。
+                    tTextContent.onchange = (evt) => {
+                        const arrayOfLines = tTextContent.value.split("\n")
+                            .filter((value) => {
+                                // 排除空的資料。
+                                return value !== "";
+                            });
+
+                        // 將調整過的內容回寫至 tTextContent。
+                        tTextContent.value = arrayOfLines.join("\n");
+                    }
+                }
+
+                if (isElementExists(iSubtitleNodeId, "iSubtitleNodeId") === true) {
+                    // 註冊 onchange 事件。
+                    iSubtitleNodeId.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(currentSubtitleItem) === true) {
+                            // 更新字幕內容。
+                            currentSubtitleItem.nodeId = iSubtitleNodeId.value;
+
+                            // 顯示字幕。
+                            displaySubtitle(currentSubtitleItem);
+
+                            // 產生字幕列表。
+                            generateSubtitleList();
+
+                            // 設定字幕列表的位置。
+                            setSelectedForSubtitleList(indexOfSubtitles);
+                        }
+                    }
+                }
+
+                if (isElementExists(iSubtitleStartTime, "iSubtitleStartTime") === true) {
+                    // 註冊 onchange 事件。
+                    iSubtitleStartTime.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(currentSubtitleItem) === true) {
+                            // 更新字幕內容。
+                            currentSubtitleItem.startTime = iSubtitleStartTime.value;
+
+                            // 顯示字幕。
+                            displaySubtitle(currentSubtitleItem);
+                        }
+                    }
+                }
+
+                if (isElementExists(iSubtitleEndTime, "iSubtitleEndTime") === true) {
+                    // 註冊 onchange 事件。
+                    iSubtitleEndTime.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(currentSubtitleItem) === true) {
+                            // 更新字幕內容。
+                            currentSubtitleItem.endTime = iSubtitleEndTime.value;
+
+                            // 顯示字幕。
+                            displaySubtitle(currentSubtitleItem);
+                        }
+                    }
+                }
+
+                if (isElementExists(tSubtitleText, "tSubtitleText") === true) {
+                    // 註冊 onchange 事件。
+                    tSubtitleText.onchange = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(currentSubtitleItem) === true) {
+                            // 更新字幕內容。
+                            currentSubtitleItem.text = tSubtitleText.value;
+
+                            // 顯示字幕。
+                            displaySubtitle(currentSubtitleItem);
+
+                            // 產生字幕列表。
+                            generateSubtitleList();
+                        }
+                    }
+                }
+
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    // 註冊 ondblclick 事件。
+                    sSubtitleList.ondblclick = (evt) => {
+                        evt.preventDefault();
+
+                        let selectedIndex = sSubtitleList.selectedIndex;
+
+                        // 取得正確的索引值。
+                        indexOfSubtitles = selectedIndex === -1 ? 0 : selectedIndex;
+
+                        // 取出字幕資料。
+                        currentSubtitleItem = arrayOfSubtitles[indexOfSubtitles];
+
+                        // 顯示字幕。
+                        displaySubtitle(currentSubtitleItem);
+
+                        if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                            // 設定影片的時間點。
+                            const startTime = convertToSecond(currentSubtitleItem.startTime);
+
+                            vVideoPlayer.currentTime = startTime;
+                        }
+                    };
+                }
+
+                // 註冊 keydown 事件。
+                document.addEventListener("keydown", (evt) => {
+                    let iSubtitleNodeIdId = "",
+                        iSubtitleStartTimeId = "",
+                        iSubtitleEndTimeId = "",
+                        tSubtitleTextId = "",
+                        tTextContentId = "";
+
+                    if (isElementExists(iSubtitleNodeId, "iSubtitleNodeId") === true) {
+                        iSubtitleNodeIdId = iSubtitleNodeId.id;
+                    }
+
+                    if (isElementExists(iSubtitleStartTime, "iSubtitleStartTime") === true) {
+                        iSubtitleStartTimeId = iSubtitleStartTime.id;
+                    }
+
+                    if (isElementExists(iSubtitleEndTime, "iSubtitleEndTime") === true) {
+                        iSubtitleEndTimeId = iSubtitleEndTime.id;
+                    }
+
+                    if (isElementExists(tSubtitleText, "tSubtitleText") === true) {
+                        tSubtitleTextId = tSubtitleText.id;
+                    }
+
+                    if (isElementExists(tTextContent, "tTextContent") === true) {
+                        tTextContentId = tTextContent.id;
+                    }
+
+                    const isTargetSubtitleNodeId = iSubtitleNodeIdId !== "" && evt.target.id === iSubtitleNodeIdId;
+                    const isTargetSubtitleStartTimeId = iSubtitleStartTimeId !== "" && evt.target.id === iSubtitleStartTimeId;
+                    const isTargetSubtitleEndTimeId = iSubtitleEndTimeId !== "" && evt.target.id === iSubtitleEndTimeId;
+                    const isTargetSubtitleText = tSubtitleTextId !== "" && evt.target.id === tSubtitleTextId;
+                    const isTargetTextContent = tTextContentId !== "" && evt.target.id === tTextContentId;
+
+                    if (isTargetSubtitleNodeId === false &&
+                        isTargetSubtitleStartTimeId === false &&
+                        isTargetSubtitleEndTimeId === false &&
+                        isTargetSubtitleText === false &&
+                        isTargetTextContent === false) {
+                        if (keyGroup.includes(evt.code) === true) {
+                            evt.preventDefault();
+                        }
+
+                        switch (evt.code) {
+                            case "KeyR":
+                                if (isElementEnabled(btnReset) === true) {
+                                    reset();
+                                }
+                                break;
+                            case "KeyW":
+                                if (isElementEnabled(btnStart) === true) {
+                                    start();
+                                }
+                                break;
+                            case "KeyF":
+                                if (isElementEnabled(btnNextSubtitle) === true) {
+                                    loadNextSubtitle();
+                                }
+                                break;
+                            case "KeyS":
+                                if (isElementEnabled(btnRecordStartTime) === true) {
+                                    recordStartTimeForSubtitle();
+                                }
+                                break;
+                            case "KeyD":
+                                if (isElementEnabled(btnRecordEndTime) === true) {
+                                    recordEndTimeForSubtitle();
+                                }
+                                break;
+                            case "KeyA":
+                                if (isElementEnabled(btnPreviousSubtitle) === true) {
+                                    loadPreviousSubtitle();
+                                }
+                                break;
+                            case "KeyQ":
+                                if (isElementEnabled(btnExport) === true) {
+                                    exportSubtitle();
+                                }
+                                break;
+                            case "KeyE":
+                                if (isElementEnabled(btnStop) === true) {
+                                    stop();
+                                }
+                                break;
+                            case "KeyZ":
+                                if (isElementEnabled(btnPlayVideo) === true) {
+                                    playVideo(isPlaying);
+                                }
+                                break;
+                            case "KeyX":
+                                if (isElementEnabled(btnRewindVideo) === true) {
+                                    rewindVideo(false, rewindSeconds);
+                                }
+                                break;
+                            case "KeyC":
+                                if (isElementEnabled(btnFastForwardVideo) === true) {
+                                    rewindVideo(true, rewindSeconds);
+                                }
+                                break;
+                            case "KeyV":
+                                if (isElementEnabled(btnStopVideo) === true) {
+                                    stopVideo();
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+                // 註冊 click 事件。
+                buttonGroup.forEach((buttonElement) => {
+                    if (buttonElement !== undefined && buttonElement !== null) {
+                        buttonElement.addEventListener("click", (evt) => {
+                            evt.preventDefault();
+
+                            switch (evt.target.id) {
+                                case btnReset.id:
+                                    reset();
+                                    break;
+                                case btnStart.id:
+                                    start();
+                                    break;
+                                case btnStop.id:
+                                    stop();
+                                    break;
+                                case btnNextSubtitle.id:
+                                    loadNextSubtitle();
+                                    break;
+                                case btnRecordStartTime.id:
+                                    recordStartTimeForSubtitle();
+                                    break;
+                                case btnRecordEndTime.id:
+                                    recordEndTimeForSubtitle();
+                                    break;
+                                case btnPreviousSubtitle.id:
+                                    loadPreviousSubtitle();
+                                    break;
+                                case btnExport.id:
+                                    exportSubtitle();
+                                    break;
+                                case btnAddSubtitle.id:
+                                    addSubtitle();
+                                    break;
+                                case btnRemoveSubtitle.id:
+                                    removeSubtitle();
+                                    break;
+                                case btnReOrderSubtitleNodeId.id:
+                                    reOrderSubtitle();
+                                    break;
+                                case btnPlayVideo.id:
+                                    playVideo(isPlaying);
+                                    break;
+                                case btnRewindVideo.id:
+                                    rewindVideo(false, rewindSeconds);
+                                    break;
+                                case btnFastForwardVideo.id:
+                                    rewindVideo(true, rewindSeconds);
+                                    break;
+                                case btnStopVideo.id:
+                                    stopVideo();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
+                    }
+                });
+
+                if (isElementExists(iFileUpload, "iFileUpload") === true) {
+                    // 註冊 onchange 事件。
+                    iFileUpload.onchange = function (event) {
+                        if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                            // 取得已選擇的第一個檔案。
+                            const file = event.target.files[0];
+
+                            // 建立 Blob。
+                            const blobURL = URL.createObjectURL(file);
+
+                            // 載入影片檔。
+                            vVideoPlayer.src = blobURL;
+
+                            // 啟用影片功能。
+                            disableVideoFunction(false);
+
+                            // 變更播放按鈕的文字
+                            changePlayButtonText(false);
+                        }
+                    }
+                }
+
+                if (isElementExists(vVideoPlayer, "vVideoPlayer")) {
+                    // 註冊 onplaying 事件。
+                    vVideoPlayer.onplaying = (evt) => {
+                        // 將 isPlaying 設為 true。
+                        isPlaying = true;
+                    }
+
+                    // 註冊 ontimeupdate 事件。
+                    vVideoPlayer.ontimeupdate = (evt) => {
+                        const seconds = vVideoPlayer.currentTime;
+                        const timestamp = convertToTimestamp(seconds);
+
+                        if (isElementExists(sTimestamp, "sTimestamp") === true) {
+                            sTimestamp.textContent = timestamp;
+                        }
+
+                        if (isElementExists(sSeconds, "sSeconds") === true) {
+                            sSeconds.textContent = seconds;
+                        }
+                    }
+                }
+
+                if (isElementExists(lSubtitleContent, "lSubtitleContent") === true) {
+                    // 註冊 ondblclick 事件。
+                    lSubtitleContent.ondblclick = (evt) => {
+                        evt.preventDefault();
+
+                        if (isElementExists(tSubtitleContent, "tSubtitleContent") === true) {
+                            const display = tSubtitleContent.style.display;
+
+                            if (display === "") {
+                                tSubtitleContent.style.display = "block";
+                            } else if (display === "none") {
+                                tSubtitleContent.style.display = "block";
+                            } else if (display === "block") {
+                                tSubtitleContent.style.display = "none";
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 播放 / 暫停影片
+         *
+         * @param {boolean} isPause - 布林值，判斷是否為暫停，預設值為 true。
+         */
+        function playVideo(isPause = false) {
+            try {
+                if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                    if (isPause === true) {
+                        if (playPromise !== undefined) {
+                            playPromise.then(_ => {
+                                // 暫停撥放影片。
+                                vVideoPlayer.pause();
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+
+                        // 將 isPlaying 設為 false;
+                        isPlaying = false;
+
+                        changePlayButtonText(false);
+                    } else {
+                        playPromise = vVideoPlayer.play();
+
+                        if (playPromise !== undefined) {
+                            playPromise.then(_ => {
+                                // 不做任何事。
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+
+                        changePlayButtonText(true);
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 停止播放影片
+         */
+        function stopVideo() {
+            try {
+                if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                    if (playPromise !== undefined) {
+                        playPromise.then(_ => {
+                            // 暫停播放影片。
+                            vVideoPlayer.pause();
+
+                            // 將影片的播放時間移至開頭。
+                            vVideoPlayer.currentTime = 0;
+                        }).catch(error => {
+                            console.log(error);
+                        });
+                    }
+
+                    // 將 isPlaying 設為 false;
+                    isPlaying = false;
+
+                    changePlayButtonText(false);
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 倒轉 / 快轉影片
+         *
+         * @param {boolean} isFastForward - 布林值，判斷是否為快轉，預設值為 false。
+         * @param {number} seconds - 數值，秒數，預設值為 2。
+         */
+        function rewindVideo(isFastForward = false, seconds = 2) {
+            try {
+                if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                    const currentSeconds = vVideoPlayer.currentTime;
+
+                    let newSeconds = 0;
+
+                    if (isFastForward) {
+                        newSeconds = currentSeconds + seconds;
+                    } else {
+                        newSeconds = currentSeconds - seconds;
+                    }
+
+                    if (newSeconds < 0) {
+                        newSeconds = 0;
+                    }
+
+                    vVideoPlayer.currentTime = newSeconds;
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 重設
+         */
+        function reset() {
+            try {
+                if (isElementExists(iFileUpload, "iFileUpload") === true) {
+                    const message = "您確定要重設嗎？";
+                    const isConfirmed = confirm(message);
+
+                    if (isConfirmed === true) {
+                        // 停止。
+                        stop();
+
+                        // 暫停影片。
+                        playVideo(true);
+
+                        // 清除已選擇的檔案。
+                        iFileUpload.value = "";
+
+                        if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                            if (playPromise !== undefined) {
+                                playPromise.then(_ => {
+                                    // 清除已載入的影片。
+                                    vVideoPlayer.src = "";
+                                }).catch(error => {
+                                    console.log(error);
+                                });
+                            }
+
+                            // 重設 playPromise。
+                            playPromise = undefined;
+                        }
+
+                        // 重設字幕變數。
+                        resetSubtitleVariable();
+
+                        if (isElementExists(tSubtitleContent, "tSubtitleContent") === true) {
+                            // 清除字幕欄位。
+                            tSubtitleContent.value = "";
+                        }
+
+                        if (isElementExists(sFileFormat, "sFileFormat") === true) {
+                            // 重設字幕檔案格式。
+                            sFileFormat.value = ".srt";
+                        }
+
+                        if (isElementExists(cbEnableParseMultipleLanguage, "cbEnableParseMultipleLanguage") === true) {
+                            // 重設雙語系解析。
+                            cbEnableParseMultipleLanguage.checked = false;
+                        }
+
+                        if (isElementExists(sLanguageParseNumber, "sLanguageParseNumber") === true) {
+                            // 重設語系數量。
+                            sLanguageParseNumber.selectedIndex = 0;
+
+                            let changeEvent = new Event("change");
+
+                            sLanguageParseNumber.dispatchEvent(changeEvent);
+                        }
+
+                        if (isElementExists(tSubtitleContent, "tSubtitleContent") === true) {
+                            // 隱藏 WebVTT 字幕區塊。
+                            tSubtitleContent.style.display = "none";
+                        }
+
+                        // 禁用字幕功能。
+                        disableSubtitleFunction(true, true);
+
+                        // 禁用影片功能。
+                        disableVideoFunction(true);
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 開始
+         */
+        function start() {
+            try {
+                if (isElementExists(tTextContent, "tTextContent") === true) {
+                    // 切割換行。
+                    const arrayOfLines = tTextContent.value.split("\n")
+                        .filter((value) => {
+                            // 排除空的資料。
+                            return value !== "";
+                        });
+
+                    if (arrayOfLines.length > 0) {
+                        // 啟用字幕功能。
+                        disableSubtitleFunction(false, false);
+
+                        // 禁用文本輸入框。
+                        tTextContent.disabled = true;
+
+                        // 重設字幕變數。
+                        resetSubtitleVariable();
+
+                        // 判斷是否啟用多語系解析。
+                        let isEnableParseMultipleLanguage = false;
+
+                        if (isElementExists(cbEnableParseMultipleLanguage, "cbEnableParseMultipleLanguage") === true) {
+                            isEnableParseMultipleLanguage = cbEnableParseMultipleLanguage.checked;
+
+                            // 禁用 cbEnableParseMultipleLanguage。
+                            cbEnableParseMultipleLanguage.disabled = true;
+                        }
+
+                        // 取得語言數量。
+                        let languageParseNumber = 2;
+
+                        if (isElementExists(sLanguageParseNumber, "sLanguageParseNumber") === true) {
+                            languageParseNumber = sLanguageParseNumber.options[sLanguageParseNumber.selectedIndex].value;
+
+                            // 禁用 sLanguageParseNumber。
+                            sLanguageParseNumber.disabled = true;
+                        }
+
+                        // 產生字幕資料。
+                        if (isEnableParseMultipleLanguage === true) {
+                            // 多語系解析。
+                            const processLimitCount = languageParseNumber - 1;
+
+                            let processCount = 0;
+                            let itemCount = 1;
+                            let subtitle = null;
+
+                            for (let i = 0; i < arrayOfLines.length; i++) {
+                                const text = arrayOfLines[i];
+
+                                if (processCount === 0) {
+                                    subtitle = new Subtitle(
+                                        itemCount,
+                                        "00:00:00.000",
+                                        "00:00:00.000",
+                                        text);
+
+                                    processCount++;
+                                } else {
+                                    if (isElementExists(subtitle, "subtitle") === true) {
+                                        subtitle.text += `\n${text}`;
+
+                                        if (processCount === processLimitCount) {
+                                            arrayOfSubtitles.push(subtitle);
+
+                                            // 重設區域變數。
+                                            processCount = 0;
+                                            subtitle = null;
+
+                                            itemCount++;
+                                        } else {
+                                            processCount++;
+                                        }
+                                    }
+                                }
+
+                                // 當行數為奇數時，進行特別處裡。
+                                if (i === arrayOfLines.length - 1 && processCount === processLimitCount) {
+                                    arrayOfSubtitles.push(subtitle);
+
+                                    // 重設區域變數。
+                                    processCount = 0;
+                                    subtitle = null;
+
+                                    itemCount++;
+                                }
+                            }
+                        } else {
+                            // 非多語系解析。
+                            for (let i = 0; i < arrayOfLines.length; i++) {
+                                const text = arrayOfLines[i];
+                                const index = i + 1;
+
+                                arrayOfSubtitles.push(new Subtitle(
+                                    index,
+                                    "00:00:00.000",
+                                    "00:00:00.000",
+                                    text))
+                            }
+                        }
+
+                        // 產生字幕列表。
+                        generateSubtitleList();
+
+                        // 載入第一行字幕。
+                        loadNextSubtitle();
+
+                        // 播放影片。
+                        playVideo(false);
+                    } else {
+                        alert("請先輸入文本。");
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 記錄字幕的開始時間
+         */
+        function recordStartTimeForSubtitle() {
+            try {
+                if (isElementExists(currentSubtitleItem, "currentSubtitleItem") === true) {
+                    if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                        // 設定字幕的開始時間。
+                        currentSubtitleItem.startTime = convertToTimestamp(vVideoPlayer.currentTime, true);
+
+                        // 顯示字幕。
+                        displaySubtitle(currentSubtitleItem);
+                    }
+                } else {
+                    alert("字幕開始時間記錄失敗，變數「currentSubtitleItem」為「undefined」或「null」。");
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 記錄字幕的結束時間
+         */
+        function recordEndTimeForSubtitle() {
+            try {
+                if (isElementExists(currentSubtitleItem, "currentSubtitleItem") === true) {
+                    if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                        // 設定字幕的結束時間。
+                        currentSubtitleItem.endTime = convertToTimestamp(vVideoPlayer.currentTime, true);
+
+                        // 顯示字幕。
+                        displaySubtitle(currentSubtitleItem);
+
+                        // 自動載入下一行。
+                        loadNextSubtitle();
+                    }
+                } else {
+                    alert("字幕結束時間記錄失敗，變數「currentSubtitleItem」為「undefined」或「null」。");
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 載入下一個字幕
+         */
+        function loadNextSubtitle() {
+            try {
+                // 計算索引值。
+                indexOfSubtitles++;
+
+                if (indexOfSubtitles < arrayOfSubtitles.length) {
+                    // 取出字幕。
+                    currentSubtitleItem = arrayOfSubtitles[indexOfSubtitles];
+
+                    // 顯示字幕。
+                    displaySubtitle(currentSubtitleItem);
+
+                    // 設定字幕列表的位置。
+                    setSelectedForSubtitleList(indexOfSubtitles);
+                } else {
+                    // 鎖定索引值至最大值。
+                    indexOfSubtitles = arrayOfSubtitles.length - 1;
+
+                    // 暫停影片。
+                    playVideo(true);
+
+                    alert("沒有下一個字幕。");
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 載入上一個字幕
+         */
+        function loadPreviousSubtitle() {
+            try {
+                if (indexOfSubtitles === 0) {
+                    // 暫停影片。
+                    playVideo(true);
+
+                    alert("沒有上一個字幕。");
+                } else {
+                    // 計算索引值。
+                    indexOfSubtitles--;
+                }
+
+                // 取出字幕。
+                currentSubtitleItem = arrayOfSubtitles[indexOfSubtitles];
+
+                // 顯示字幕。
+                displaySubtitle(currentSubtitleItem);
+
+                // 設定字幕列表的位置。
+                setSelectedForSubtitleList(indexOfSubtitles);
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 新增字幕
+         */
+        function addSubtitle() {
+            try {
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    const selectedIndex = sSubtitleList.selectedIndex;
+
+                    let actualIndex = selectedIndex + 1;
+
+                    let subtitle = new Subtitle(
+                        actualIndex,
+                        "00:00:00.000",
+                        "00:00:00.000",
+                        `新字幕${actualIndex}`);
+
+                    // 當沒有選取字幕時，則插入在最開始的位置。
+                    if (selectedIndex === -1) {
+                        subtitle.nodeId = 1;
+                        subtitle.text = "新字幕1";
+
+                        // 在指定的 index 加入一個字幕。
+                        arrayOfSubtitles.splice(0, 0, subtitle);
+                    } else {
+                        // 在指定的 selectedIndex 加入一個字幕。
+                        arrayOfSubtitles.splice(selectedIndex, 0, subtitle);
+                    }
+
+                    // 延後 0.05 秒再執行。
+                    setTimeout(() => {
+                        // 產生字幕列表。
+                        generateSubtitleList();
+
+                        // 清除 Timeout。
+                        clearTimeout(this);
+                    }, 50);
+
+                    // 延後 0.05 秒再執行。
+                    setTimeout(() => {
+                        indexOfSubtitles = selectedIndex === -1 ? 0 : selectedIndex;
+
+                        // 取出字幕。
+                        currentSubtitleItem = arrayOfSubtitles[indexOfSubtitles];
+
+                        // 顯示字幕。
+                        displaySubtitle(currentSubtitleItem);
+
+                        // 設定字幕列表的位置。
+                        setSelectedForSubtitleList(indexOfSubtitles);
+
+                        // 清除 Timeout。
+                        clearTimeout(this);
+                    }, 50);
+                }
+            } catch (error) {
+                alet(error);
+            }
+        }
+
+        /**
+         * 刪除字幕
+         */
+        function removeSubtitle() {
+            try {
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    const selectedIndex = sSubtitleList.selectedIndex;
+
+                    if (selectedIndex !== -1) {
+                        if (arrayOfSubtitles.length > 0) {
+                            // 從目前的 selectedIndex 刪除一個字幕。
+                            arrayOfSubtitles.splice(selectedIndex, 1);
+
+                            // 延後 0.05 秒再執行。
+                            setTimeout(() => {
+                                // 產生字幕列表。
+                                generateSubtitleList();
+
+                                // 清除 Timeout。
+                                clearTimeout(this);
+                            }, 50);
+
+                            // 當 indexOfSubtitles 與 selectedIndex 相等時，
+                            // 才載入上一個字幕。
+                            if (indexOfSubtitles === selectedIndex) {
+                                // 載入上一個字幕。
+                                loadPreviousSubtitle();
+                            }
+                        } else {
+                            alert("刪除失敗，請先新增字幕。");
+                        }
+                    } else {
+                        alert("刪除失敗，請先選擇要刪除的字幕。");
+                    }
+                }
+            } catch (error) {
+                alet(error);
+            }
+        }
+
+        /**
+         * 重新排序節點 ID
+         */
+        function reOrderSubtitle() {
+            if (arrayOfSubtitles.length > 0) {
+                const message = "您確定要重新排序節點 ID 嗎？\n\n既有的節點 ID 將會被覆寫。";
+                const isConmirmed = confirm(message);
+
+                if (isConmirmed === true) {
+                    for (let i = 0; i < arrayOfSubtitles.length; i++) {
+                        let subtitle = arrayOfSubtitles[i];
+
+                        const actualNodeId = i + 1;
+
+                        subtitle.nodeId = actualNodeId;
+                    }
+
+                    // 延後 0.05 秒再執行。
+                    setTimeout(() => {
+                        // 產生字幕列表。
+                        generateSubtitleList();
+
+                        // 清除 Timeout。
+                        clearTimeout(this);
+                    }, 50);
+
+                    // 延後 0.05 秒再執行。
+                    setTimeout(() => {
+                        // 取出字幕。
+                        currentSubtitleItem = arrayOfSubtitles[indexOfSubtitles];
+
+                        // 顯示字幕。
+                        displaySubtitle(currentSubtitleItem);
+
+                        // 設定字幕列表的位置。
+                        setSelectedForSubtitleList(indexOfSubtitles);
+
+                        // 清除 Timeout。
+                        clearTimeout(this);
+                    }, 50)
+                }
+            } else {
+                alert("重新排序節點 ID 失敗，請先新增字幕。");
+            }
+        }
+
+        /**
+         * 匯出字幕檔
+         */
+        function exportSubtitle() {
+            try {
+                if (isElementExists(tSubtitleContent, "tSubtitleContent") === true) {
+                    if (isElementExists(sFileFormat, "sFileFormat") === true) {
+                        let fileName = "字幕檔";
+
+                        if (isElementExists(iFileUpload, "iFileUpload") === true) {
+                            if (iFileUpload.files.length > 0) {
+                                fileName = iFileUpload.files[0].name;
+                                fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                            }
+                        }
+
+                        let exportContent = tSubtitleContent.value;
+
+                        if (exportContent !== "" && exportContent !== prefixWebVTT) {
+                            // 預設的 MIME。
+                            let fileMIME = "text/plain";
+
+                            // 取得選擇的副檔名。
+                            const extName = sFileFormat.value;
+
+                            if (extName === ".vtt") {
+                                // 設定檔案的 MIME。
+                                fileMIME = "text/vtt";
+
+                                const noteContent = `${prefixWebVTT}NOTE\n本字幕檔由${pageTitle} 產生。\n\n`;
+
+                                // 針對 .vtt 加入註解。
+                                exportContent = exportContent.replace(prefixWebVTT, noteContent);
+                            } else {
+                                // 針對 .srt 移除 WebVTT 相關內容，並調整時間格式。
+                                exportContent = exportContent.replace(prefixWebVTT, "")
+                                    .replace(/(\d*:\d*:\d*)[\.](\d*)/g, function (p1) {
+                                        return p1.replace(".", ",");
+                                    });
+                            }
+
+                            const blob = new Blob([exportContent], { type: `${fileMIME};charset=utf8` });
+
+                            const tempAnchor = document.createElement("a");
+
+                            tempAnchor.download = `${fileName}${extName}`;
+                            tempAnchor.href = window.URL.createObjectURL(blob);
+                            tempAnchor.style.display = "none";
+
+                            document.body.appendChild(tempAnchor);
+
+                            tempAnchor.click();
+
+                            document.body.removeChild(tempAnchor);
+                        } else {
+                            alert("無法匯出字幕檔，請先編輯字幕。");
+                        }
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 結束
+         */
+        function stop() {
+            try {
+                if (isElementExists(tTextContent, "tTextContent") === true) {
+                    const message = "您確定要停止嗎？\n\n當您一停止後，要再次開始時，會重新開始記錄字幕。";
+                    const isConfirmed = confirm(message);
+
+                    if (isConfirmed === true) {
+                        // 停止播放影片。
+                        playVideo(true);
+
+                        // 禁用字幕功能。
+                        disableSubtitleFunction(true, false);
+
+                        // 啟用文本欄位。
+                        tTextContent.disabled = false;
+
+                        if (isElementExists(cbEnableParseMultipleLanguage, "cbEnableParseMultipleLanguage") === true) {
+                            // 啟用 cbEnableParseMultipleLanguage。
+                            cbEnableParseMultipleLanguage.disabled = false;
+                        }
+
+                        if (isElementExists(sLanguageParseNumber, "sLanguageParseNumber") === true) {
+                            // 啟用 sLanguageParseNumber。
+                            sLanguageParseNumber.disabled = false;
+                        }
+
+                        // 重設字幕變數。
+                        resetSubtitleVariable();
+
+                        // 清除字幕列表。
+                        clearSubtitleList();
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 顯示字幕
+         *
+         * @param {Subtitle} subtitle - 字幕。
+         */
+        function displaySubtitle(subtitle) {
+            try {
+                if (isElementExists(subtitle, "") === true) {
+                    if (isElementExists(iSubtitleNodeId, "iSubtitleNodeId") === true) {
+                        iSubtitleNodeId.value = subtitle.nodeId;
+                    }
+
+                    if (isElementExists(iSubtitleStartTime, "iSubtitleStartTime") === true) {
+                        iSubtitleStartTime.value = subtitle.startTime;
+                    }
+
+                    if (isElementExists(iSubtitleEndTime, "iSubtitleEndTime") === true) {
+                        iSubtitleEndTime.value = subtitle.endTime;
+                    }
+
+                    if (isElementExists(tSubtitleText, "tSubtitleText") === true) {
+                        tSubtitleText.value = subtitle.text;
+                    }
+                } else {
+                    if (isElementExists(iSubtitleNodeId, "iSubtitleNodeId") === true) {
+                        iSubtitleNodeId.value = "";
+                    }
+
+                    if (isElementExists(iSubtitleStartTime, "iSubtitleStartTime") === true) {
+                        iSubtitleStartTime.value = "";
+                    }
+
+                    if (isElementExists(iSubtitleEndTime, "iSubtitleEndTime") === true) {
+                        iSubtitleEndTime.value = "";
+                    }
+
+                    if (isElementExists(tSubtitleText, "tSubtitleText") === true) {
+                        tSubtitleText.value = "";
+                    }
+                }
+
+                // 產生 WebVTT。
+                generateWebVTT();
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 產生 WebVTT
+         */
+        function generateWebVTT() {
+            try {
+                let tempContent = "";
+
+                for (let i = 0; i < arrayOfSubtitles.length; i++) {
+                    const subtitle = arrayOfSubtitles[i];
+
+                    if (i === 0) {
+                        tempContent += prefixWebVTT;
+                    }
+
+                    if (isElementExists(subtitle, "subtitle") === true) {
+                        // 沒紀錄結束時間的字幕不顯示。
+                        if (subtitle.endTime !== "00:00:00.000") {
+                            tempContent += `${subtitle.nodeId}\n`;
+                            tempContent += `${subtitle.startTime} --> ${subtitle.endTime}\n`;
+                            tempContent += `${subtitle.text}\n\n`;
+                        }
+                    }
+                }
+
+                if (isElementExists(tSubtitleContent, "tSubtitleContent") === true) {
+                    // 將 tempContent 寫至 tSubtitleContent。
+                    tSubtitleContent.value = tempContent;
+
+                    // 讓 tSubtitleContent 自動捲至底部。
+                    tSubtitleContent.scrollTop = tSubtitleContent.scrollHeight;
+
+                    // 當 tSubtitleContent.value 有有效值時才進行下列操作。
+                    if (tSubtitleContent.value !== "" && tSubtitleContent.value !== prefixWebVTT) {
+                        // 動態插入 <tack> 至 <video>。
+                        addTrackToVideo(tSubtitleContent.value);
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 插入 <tack> 至 <video>
+         *
+         * 來源：https://stackoverflow.com/a/42918584
+         *
+         * @param {string} value - 字串。
+         */
+        function addTrackToVideo(value) {
+            try {
+                if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                    // 動態建立 WebVTT 字幕。
+                    let tSubtitle = document.getElementById("tSubtitle");
+
+                    if (isElementExists(tSubtitle) === false) {
+                        tSubtitle = document.createElement("track");
+
+                        tSubtitle.id = "tSubtitle";
+                        tSubtitle.kind = "subtitles";
+                        tSubtitle.label = "正體中文";
+                        tSubtitle.srclang = "zh-TW";
+                        tSubtitle.mode = "showing";
+
+                        // 插入 <track> 至 <video>.
+                        vVideoPlayer.appendChild(tSubtitle);
+                    }
+
+                    // 產生新的 Blob。
+                    const blobWebVTT = new Blob([value], {
+                        type: "text/plain"
+                    });
+
+                    // 更新 tSubtitle 的 src。
+                    tSubtitle.src = URL.createObjectURL(blobWebVTT);
+
+                    // 讓字幕顯示。
+                    if (vVideoPlayer.textTracks.length > 0) {
+                        const track = vVideoPlayer.textTracks[0];
+
+                        if (isElementExists(track, "track") === true) {
+                            track.mode = "showing";
+                        }
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 從 <video> 中移除全部的 <track>
+         *
+         * 來源：https://stackoverflow.com/a/57881151
+         */
+        function removeTrackFromVideo() {
+            try {
+                if (isElementExists(vVideoPlayer, "vVideoPlayer") === true) {
+                    for (let i = 0; i < vVideoPlayer.textTracks.length; i++) {
+                        // 移除 <video> 下的 <track>。
+                        vVideoPlayer.removeChild(vVideoPlayer.children[i]);
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 產生字幕列表
+         */
+        function generateSubtitleList() {
+            try {
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    // 先清除內容。
+                    sSubtitleList.options.length = 0;
+
+                    for (let i = 0; i < arrayOfSubtitles.length; i++) {
+                        const subtitle = arrayOfSubtitles[i];
+
+                        if (isElementExists(subtitle, "subtitle") === true) {
+                            const option = new Option(
+                                `[${subtitle.nodeId}] ${subtitle.text}`,
+                                subtitle.nodeId,
+                                false);
+
+                            sSubtitleList.add(option);
+                        }
+                    }
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 清除字幕列表
+         */
+        function clearSubtitleList() {
+            try {
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    // 清除內容。
+                    sSubtitleList.options.length = 0;
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 禁用字幕功能
+         *
+         * @param {boolean} disabled - 布林值，判斷是否為禁用，預設值為 true。
+         * @param {boolean} isFirstTime - 布林值，判斷是否為第一次呼叫，預設值為 true。
+         */
+        function disableSubtitleFunction(disabled = true, isFirstTime = true) {
+            try {
+                if (isFirstTime === false) {
+                    if (isElementExists(btnStart, "btnStart") === true) {
+                        btnStart.disabled = !disabled;
+                    }
+                }
+
+                if (isElementExists(btnRecordStartTime, "btnRecordStartTime") === true) {
+                    btnRecordStartTime.disabled = disabled;
+                }
+
+                if (isElementExists(btnRecordEndTime, "btnRecordEndTime") === true) {
+                    btnRecordEndTime.disabled = disabled;
+                }
+
+                if (isElementExists(btnNextSubtitle, "btnNextSubtitle") === true) {
+                    btnNextSubtitle.disabled = disabled;
+                }
+
+                if (isElementExists(btnPreviousSubtitle, "btnPreviousSubtitle") === true) {
+                    btnPreviousSubtitle.disabled = disabled;
+                }
+
+                if (isElementExists(sFileFormat, "sFileFormat") === true) {
+                    sFileFormat.disabled = disabled;
+                }
+
+                if (isElementExists(btnExport, "btnExport") === true) {
+                    btnExport.disabled = disabled;
+                }
+
+                if (isElementExists(btnStop, "btnStop") === true) {
+                    btnStop.disabled = disabled;
+                }
+
+                if (isElementExists(iSubtitleNodeId, "iSubtitleNodeId") === true) {
+                    iSubtitleNodeId.disabled = disabled;
+                }
+
+                if (isElementExists(iSubtitleStartTime, "iSubtitleStartTime") === true) {
+                    iSubtitleStartTime.disabled = disabled;
+                }
+
+                if (isElementExists(iSubtitleEndTime, "iSubtitleEndTime") === true) {
+                    iSubtitleEndTime.disabled = disabled;
+                }
+
+                if (isElementExists(tSubtitleText, "tSubtitleText") === true) {
+                    tSubtitleText.disabled = disabled;
+                }
+
+                if (isElementExists(btnAddSubtitle, "btnAddSubtitle") === true) {
+                    btnAddSubtitle.disabled = disabled;
+                }
+
+                if (isElementExists(btnRemoveSubtitle, "btnRemoveSubtitle") === true) {
+                    btnRemoveSubtitle.disabled = disabled;
+                }
+
+                if (isElementExists(btnReOrderSubtitleNodeId, "btnReOrderSubtitleNodeId") === true) {
+                    btnReOrderSubtitleNodeId.disabled = disabled;
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 禁用影片功能
+         *
+         * @param {boolean} disabled - 布林值，判斷是否為禁用，預設值為 true。
+         */
+        function disableVideoFunction(disabled = true) {
+            try {
+                if (isElementExists(btnStart, "btnStart") === true) {
+                    btnStart.disabled = disabled;
+                }
+
+                if (isElementExists(btnPlayVideo, "btnPlayVideo") === true) {
+                    btnPlayVideo.disabled = disabled;
+                }
+
+                if (isElementExists(btnRewindVideo, "btnRewindVideo") === true) {
+                    btnRewindVideo.disabled = disabled;
+                }
+
+                if (isElementExists(btnFastForwardVideo, "btnFastForwardVideo") === true) {
+                    btnFastForwardVideo.disabled = disabled;
+                }
+
+                if (isElementExists(btnStopVideo, "btnStopVideo") === true) {
+                    btnStopVideo.disabled = disabled;
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+        * 變更播放按鈕的文字
+        *
+        * @param {boolean} isPlaying - 布林值，判斷是否為正在播放，預設值為 false。
+        */
+        function changePlayButtonText(isPlaying = false) {
+            try {
+                if (isElementExists(btnPlayVideo, "btnPlayVideo") === true) {
+                    btnPlayVideo.innerText = isPlaying === true ? "暫停 (Z)" : "播放 (Z)";
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 設定字幕列表的已選擇項目
+         *
+         * @param {number} index - 數值，索引值。
+         */
+        function setSelectedForSubtitleList(index) {
+            try {
+                if (isElementExists(sSubtitleList, "sSubtitleList") === true) {
+                    let magicHeight = 1;
+
+                    for (let i = 0; i < sSubtitleList.options.length; i++) {
+                        const targetOption = sSubtitleList.options[i];
+
+                        if (isElementExists(targetOption, "targetOption") === true) {
+                            if (i === index) {
+                                magicHeight = targetOption.scrollHeight;
+
+                                targetOption.selected = true;
+                            } else {
+                                targetOption.selected = false;
+                            }
+                        }
+                    }
+
+                    // 延後 0.05 秒再執行。
+                    setTimeout(() => {
+                        // 設定字幕列表顯示的位置。
+                        sSubtitleList.scrollTop = index * magicHeight;
+
+                        // 清除 Timeout。
+                        clearTimeout(this);
+                    }, 50);
+                }
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         *  重設字幕變數
+         */
+        function resetSubtitleVariable() {
+            try {
+                // 重設 indexOfSubtitles。
+                indexOfSubtitles = -1;
+
+                // 重設 currentSubtitle。
+                currentSubtitleItem = null;
+
+                // 清空 arrayOfSubtitles。
+                arrayOfSubtitles.length = 0;
+
+                // 清除插入的 WebVTT。
+                removeTrackFromVideo();
+
+                // 清除目前字幕。
+                displaySubtitle(null);
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        /**
+         * 將秒數化成 FFmpeg 的時間格式字串
+         *
+         * 參考：https://www.geeksforgeeks.org/how-to-convert-seconds-to-time-string-format-hhmmss-using-javascript/
+         *
+         * @param {number} secs - 數值，HTML <video> 元素的 currentTime 屬性的值。
+         * @param {boolean} allowDecimalPoint - 布林值，是否允許輸出毫秒，預設值為 true。
+         * @returns {string} 字串，FFmpeg 時間格式字串。
+         */
+        function convertToTimestamp(secs, allowDecimalPoint = true) {
+            const dateObj = new Date(secs * 1000);
+
+            const hours = dateObj.getUTCHours();
+            const minutes = dateObj.getUTCMinutes();
+            let seconds = dateObj.getSeconds();
+            const milliseconds = dateObj.getMilliseconds();
+
+            let decimalPoint = "";
+
+            if (allowDecimalPoint === true) {
+                decimalPoint = `.${milliseconds.toString().padStart(3, "0")}`;
+            } else {
+                // 對毫秒進行四捨五入，當值大於等於 500 毫秒加 1 秒。
+                if (milliseconds >= 500) {
+                    seconds = seconds + 1;
+                }
+            }
+
+            return `${hours.toString().padStart(2, "0")}:` +
+                `${minutes.toString().padStart(2, "0")}:` +
+                `${seconds.toString().padStart(2, "0")}` +
+                `${decimalPoint}`;
+        }
+
+        /**
+         * 將 FFmpeg 的時間格式字串化成秒數
+         *
+         * 參考：https://stackoverflow.com/a/57571687
+         *
+         * @param {value} secs - 字串，FFmpeg 時間格式字串。
+         * @returns {number} 數值，秒數。
+         */
+        function convertToSecond(value) {
+            const array = value.split(":");
+
+            const hours = +array[0];
+            const minutes = +array[1];
+            const seconds = parseFloat(array[2]);
+
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        /**
+         * 檢查元素是否已啟用
+         *
+         * @param {any} element - 元素。
+         * @returns {boolean} 布林值，元素是否已啟用。
+         */
+        function isElementEnabled(element) {
+            let isEnabled = false;
+
+            try {
+                if (isElementExists(element, "") === true) {
+                    isEnabled = !element.disabled;
+                } else {
+                    isEnabled = false;
+                }
+            } catch (error) {
+                alert(error);
+            }
+
+            return isEnabled;
+        }
+
+        /**
+         * 檢查元素是否存在
+         *
+         * @param {any} element - 元素。
+         * @param {string} elementId - 字串，元素的 ID 值。
+         * @returns {boolean} 布林值，元素是否存在。
+         */
+        function isElementExists(element, elementId = "") {
+            let isExists = false;
+
+            try {
+                if (element !== undefined && element !== null) {
+                    isExists = true;
+                } else {
+                    // 當 elementId 有有效值時才顯示訊息。
+                    if (elementId !== undefined &&
+                        elementId !== null &&
+                        elementId !== "") {
+                        alert(`找不到元素「${elementId}」。`);
+                    }
+
+                    isExists = false;
+                }
+            } catch (error) {
+                alert(error);
+            }
+
+            return isExists;
+        }
+    </script>
+</body>
+</html>
